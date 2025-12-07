@@ -25,6 +25,19 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/web/**/*.ts', 'src/web/**/*.tsx', '*.config.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['scripts/*.js'],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
