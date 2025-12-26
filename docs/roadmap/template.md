@@ -1,6 +1,7 @@
 # v{version} - {main selling point}
 
 **Status**:
+
 - [ ] Planned
 - [ ] In Progress
 - [ ] Complete
@@ -30,6 +31,7 @@
 ### Backend
 
 #### 1. {feature}
+
 - [ ] {criteria}
 
 ---
@@ -37,6 +39,7 @@
 ### Frontend
 
 #### 1. {feature}
+
 - [ ] {criteria}
 
 ---
@@ -44,6 +47,7 @@
 ### Miscellaneous
 
 #### 1. {feature}
+
 - [ ] {criteria}
 
 ---
@@ -51,14 +55,15 @@
 ## Technical Decisions
 
 ### 1. {decision}
+
 {rationale}
 
 ---
 
 ## Risk Assessment
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
+| Risk   | Impact   | Mitigation   |
+| ------ | -------- | ------------ |
 | {risk} | {impact} | {mitigation} |
 
 ---
