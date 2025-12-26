@@ -4,7 +4,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { ReactRouterController } from "./react-router.controller";
+import { ReactRouterModule } from "./react-router/react-router.module";
 import configuration from "./config/configuration";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -20,11 +20,12 @@ const isProduction = process.env.NODE_ENV === "production";
 					ServeStaticModule.forRoot({
 						rootPath: join(__dirname, "..", "web", "client"),
 						serveRoot: "/"
-					})
+					}),
+					ReactRouterModule
 				]
 			: [])
 	],
-	controllers: isProduction ? [AppController, ReactRouterController] : [AppController],
+	controllers: [AppController],
 	providers: [AppService]
 })
 export class AppModule {}
