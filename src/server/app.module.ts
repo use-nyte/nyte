@@ -1,17 +1,30 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import configuration from './config/configuration';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { ReactRouterController } from "./react-router.controller";
+import configuration from "./config/configuration";
+
+const isProduction = process.env.NODE_ENV === "production";
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			load: [configuration]
+		}),
+		...(isProduction
+			? [
+					ServeStaticModule.forRoot({
+						rootPath: join(__dirname, "..", "web", "client"),
+						serveRoot: "/"
+					})
+				]
+			: [])
+	],
+	controllers: isProduction ? [AppController, ReactRouterController] : [AppController],
+	providers: [AppService]
 })
 export class AppModule {}
