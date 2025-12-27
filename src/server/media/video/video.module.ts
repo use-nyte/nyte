@@ -6,6 +6,6 @@ import { FilesystemModule } from "../../filesystem/filesystem.module";
 @Module({
 	providers: [VideoService],
 	controllers: [VideoController],
-  imports: [FilesystemModule]
+  	imports: [FilesystemModule]
 })
 export class VideoModule {}
