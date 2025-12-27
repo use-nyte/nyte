@@ -2,11 +2,16 @@ import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { AppModule } from "./app.module.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { ConsoleLogger } from "@nestjs/common";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 void (async () => {
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule, {
+		logger: new ConsoleLogger({
+			prefix: "Nyte"
+		})
+	});
 
 	const configService = app.get(ConfigService);
 	const port = configService.get<number>("port") ?? 3000;
