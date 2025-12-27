@@ -4,5 +4,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
 	publicDir: "src/assets",
-	plugins: [reactRouter(), tsconfigPaths({ projects: ["./tsconfig.web.json"] })]
+	plugins: [reactRouter(), tsconfigPaths({ projects: ["./tsconfig.web.json"] })],
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://localhost:3000",
+				changeOrigin: true
+			}
+		}
+	}
 });
