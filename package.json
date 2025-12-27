@@ -4,8 +4,8 @@
 	"description": "Server and main web app for Nyte",
 	"license": "Apache-2.0",
 	"scripts": {
-		"dev": "cross-env NODE_ENV=development concurrently --kill-others-on-fail --handle-input \"pnpm:dev:server\" \"pnpm:dev:web\" --names \"api,web\" --prefix-colors \"cyan,magenta\"",
-		"dev:server": "nest start --watch",
+		"dev": "cross-env NODE_ENV=development concurrently --kill-others-on-fail --handle-input \"pnpm:dev:server\" \"pnpm:dev:web\" --names \"server,web\" --prefix-colors \"cyan,magenta\"",
+		"dev:server": "cross-env NODE_OPTIONS=--no-deprecation nest start --watch",
 		"dev:web": "react-router dev",
 		"build": "node scripts/clean-dist.mjs && pnpm lint && pnpm format && pnpm build:web && pnpm build:server && node scripts/move-web-build.mjs",
 		"build:server": "nest build",
