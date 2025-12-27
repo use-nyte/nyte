@@ -1,21 +1,25 @@
-import { Link } from "react-router";
-
 export function meta() {
 	return [{ title: "Nyte - Home" }, { name: "description", content: "Welcome to Nyte!" }];
 }
 
-export default function Home() {
+export async function loader() {
+	const apiUrl = typeof window === "undefined" ? "http://localhost:3000/api/videos" : "/api/videos";
+	return fetch(apiUrl).then((res) => res.json());
+}
+
+export default function Home({ loaderData }: { loaderData: string[] }) {
 	return (
 		<div style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-			<h1>Welcome to Nyte</h1>
-			<p>This is your home page built with React Router framework mode.</p>
-			<nav>
-				<ul>
-					<li>
-						<Link to="/about">About</Link>
+			<h1>Videos</h1>
+			<ul>
+				{loaderData.map((video: string, index: number) => (
+					<li key={index} style={{ marginBottom: "1rem" }}>
+						<a href={`/api/videos/${video}`} style={{ textDecoration: "none", color: "blue" }}>
+							<h2>{video}</h2>
+						</a>
 					</li>
-				</ul>
-			</nav>
+				))}
+			</ul>
 		</div>
 	);
 }

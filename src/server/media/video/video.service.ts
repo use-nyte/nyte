@@ -1,25 +1,33 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { FilesystemService } from "../../filesystem/filesystem.service";
 import { ConfigService } from "@nestjs/config";
+import { VideoReadError } from "./errors/video-read.error";
 
 @Injectable()
-export class VideoService implements OnModuleInit {
-    private readonly logger = new Logger(VideoService.name, { timestamp: true });
+export class VideoService {
+	private readonly logger = new Logger(VideoService.name, { timestamp: true });
 
-    constructor(
-        private readonly configService: ConfigService,
-        private readonly filesystemService: FilesystemService
-    ) {}
+	constructor(
+		private readonly configService: ConfigService,
+		private readonly filesystemService: FilesystemService
+	) {}
 
-	async onModuleInit() {
-        const videos = await this.scanVideosInDirectory(this.configService.get<string>("filesystem.mediaDirectory") || "/path/to/media");
-        console.table(videos);
-    }
+	async scanVideosInDirectory(directoryPath: string): Promise<string[]> {
+		return this.filesystemService.scanDirectory(directoryPath, {
+			recursive: true,
+			filterFileTypes: [".mp4", ".avi", ".mkv", ".png"]
+		});
+	}
 
-	scanVideosInDirectory(directoryPath: string): Promise<string[]> {
-        return this.filesystemService.scanDirectory(directoryPath, {
-            recursive: true,
-            filterFileTypes: [".mp4", ".avi", ".mkv", ".usm"]
-        });
-    }
+	async getVideo(videoPath: string): Promise<Buffer> {
+		return this.filesystemService.getFile(videoPath).then(
+            function handleVideoReadSuccess(data: Buffer) {
+                return data;
+            }.bind(this)
+        ).catch(
+            function handleVideoReadError(error: Error) {
+                throw new VideoReadError(videoPath, error);
+            }.bind(this)
+        );
+	}
 }

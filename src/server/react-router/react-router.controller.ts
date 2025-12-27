@@ -11,7 +11,12 @@ export class ReactRouterController {
 	@All("*")
 	async render(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
 		// Skip API routes and static assets
-		if (req.path.startsWith("/api") || req.path.startsWith("/assets") || req.path === "/favicon.ico") {
+		if (
+			req.path.startsWith("/api") ||
+			req.path.startsWith("/assets") ||
+			req.path === "/favicon.ico" ||
+			req.path === "/robots.txt"
+		) {
 			return next();
 		}
 
