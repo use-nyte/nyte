@@ -20,6 +20,8 @@ const isProduction = process.env.NODE_ENV === "production";
 			isGlobal: true,
 			load: [configuration]
 		}),
+		MediaModule,
+		FilesystemModule,
 		...(isProduction
 			? [
 					ServeStaticModule.forRoot({
@@ -28,9 +30,7 @@ const isProduction = process.env.NODE_ENV === "production";
 					}),
 					ReactRouterModule
 				]
-			: []),
-		MediaModule,
-		FilesystemModule
+			: [])
 	]
 })
 export class AppModule {}

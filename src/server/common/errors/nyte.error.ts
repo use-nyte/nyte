@@ -3,8 +3,8 @@ export class NyteError extends Error {
 
 	constructor(message: string, originalError: Error) {
 		super(`${message}\n${NyteError.getRootMessage(originalError)}`);
-		
-		Object.defineProperty(this, 'originalError', {
+
+		Object.defineProperty(this, "originalError", {
 			value: originalError,
 			enumerable: false,
 			writable: false,
@@ -12,11 +12,11 @@ export class NyteError extends Error {
 		});
 
 		if (this.stack && originalError.stack) {
-			const messageLines = this.stack.split('\n').filter(line => !line.trim().startsWith('at '));
-			const thisAt = this.stack.split('\n').find(line => line.trim().startsWith('at '));
-			const errorAt = originalError.stack.split('\n').filter(line => line.trim().startsWith('at '));
+			const messageLines = this.stack.split("\n").filter((line) => !line.trim().startsWith("at "));
+			const thisAtLine = this.stack.split("\n").find((line) => line.trim().startsWith("at "));
+			const errorAtLines = originalError.stack.split("\n").filter((line) => line.trim().startsWith("at "));
 
-			this.stack = [...messageLines, thisAt, ...errorAt].join('\n');
+			this.stack = [...messageLines, thisAtLine, ...errorAtLines].filter(Boolean).join("\n");
 		}
 	}
 

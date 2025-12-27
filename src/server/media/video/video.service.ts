@@ -20,14 +20,17 @@ export class VideoService {
 	}
 
 	async getVideo(videoPath: string): Promise<Buffer> {
-		return this.filesystemService.getFile(videoPath).then(
-            function handleVideoReadSuccess(data: Buffer) {
-                return data;
-            }.bind(this)
-        ).catch(
-            function handleVideoReadError(error: Error) {
-                throw new VideoReadError(videoPath, error);
-            }.bind(this)
-        );
+		return this.filesystemService
+			.getFile(videoPath)
+			.then(
+				function handleVideoReadSuccess(data: Buffer) {
+					return data;
+				}.bind(this)
+			)
+			.catch(
+				function handleVideoReadError(error: Error) {
+					throw new VideoReadError(videoPath, error);
+				}.bind(this)
+			);
 	}
 }
