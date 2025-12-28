@@ -14,6 +14,10 @@ void (async () => {
 		})
 	});
 
+	// Trust proxy headers (for nginx/reverse proxy)
+	const expressInstance = app.getHttpAdapter().getInstance();
+	expressInstance.set("trust proxy", true);
+
 	// Register global exception filter
 	app.useGlobalFilters(new NyteExceptionFilter());
 

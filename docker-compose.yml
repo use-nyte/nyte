@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   nyte:
-    image: nyte:latest
+    image: meawesome/nyte:latest
     container_name: nyte
     environment:
       - NODE_ENV=production
