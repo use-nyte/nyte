@@ -58,7 +58,7 @@ describe("VideoController", () => {
 	});
 
 	it("should construct with VideoService", () => {
-		const newController = new VideoController(mockService as VideoService);
+		const newController = new VideoController(mockService as unknown as VideoService);
 		expect(newController).toBeDefined();
 		expect(newController["videoService"]).toBe(mockService);
 	});
