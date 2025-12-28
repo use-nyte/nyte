@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { AppModule } from "./app.module.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { ConsoleLogger } from "@nestjs/common";
+import { NyteExceptionFilter } from "./common/filters/nyte-exception.filter.js";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -12,6 +13,9 @@ void (async () => {
 			prefix: "Nyte"
 		})
 	});
+
+	// Register global exception filter
+	app.useGlobalFilters(new NyteExceptionFilter());
 
 	const configService = app.get(ConfigService);
 	const port = configService.get<number>("port") ?? 3000;

@@ -1,7 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { FilesystemService } from "../../filesystem/filesystem.service";
+import { FilesystemService } from "../filesystem/filesystem.service";
 import { ConfigService } from "@nestjs/config";
 import { VideoReadError } from "./errors/video-read.error";
+import { ScanDirectoryOptions } from "../filesystem/types/scan-directory-options.type";
 
 @Injectable()
 export class VideoService {
@@ -12,10 +13,10 @@ export class VideoService {
 		private readonly filesystemService: FilesystemService
 	) {}
 
-	async scanVideosInDirectory(directoryPath: string): Promise<string[]> {
+	async scanVideosInDirectory(directoryPath: string, options?: ScanDirectoryOptions): Promise<string[]> {
 		return this.filesystemService.scanDirectory(directoryPath, {
-			recursive: true,
-			filterFileTypes: [".mp4", ".avi", ".mkv", ".png"]
+			recursive: options?.recursive ?? true,
+			filterFileTypes: options?.filterFileTypes ?? [".mp4", ".mkv", ".avi", ".mov"]
 		});
 	}
 

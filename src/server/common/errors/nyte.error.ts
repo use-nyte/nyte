@@ -1,8 +1,8 @@
 export class NyteError extends Error {
-	private readonly originalError: Error;
+	private readonly originalError?: Error;
 
-	constructor(message: string, originalError: Error) {
-		super(`${message}\n${NyteError.getRootMessage(originalError)}`);
+	constructor(message: string, originalError?: Error) {
+		super(originalError ? `${message}\n${NyteError.getRootMessage(originalError)}` : message);
 
 		Object.defineProperty(this, "originalError", {
 			value: originalError,
@@ -11,7 +11,7 @@ export class NyteError extends Error {
 			configurable: false
 		});
 
-		if (this.stack && originalError.stack) {
+		if (this.stack && originalError?.stack) {
 			const messageLines = this.stack.split("\n").filter((line) => !line.trim().startsWith("at "));
 			const thisAtLine = this.stack.split("\n").find((line) => line.trim().startsWith("at "));
 			const errorAtLines = originalError.stack.split("\n").filter((line) => line.trim().startsWith("at "));

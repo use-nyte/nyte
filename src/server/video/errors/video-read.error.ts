@@ -1,4 +1,4 @@
-import { NyteError } from "../../../common/errors/nyte.error";
+import { NyteError } from "../../common/errors/nyte.error";
 
 export class VideoReadError extends NyteError {
 	constructor(path: string, originalError: Error) {

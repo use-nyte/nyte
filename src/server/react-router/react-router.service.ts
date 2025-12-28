@@ -1,8 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import type { Request, Response } from "express";
+import { createRequestHandler } from "react-router";
 import { join } from "path";
 import { pathToFileURL } from "url";
+import { ReactRouterModuleLoadError } from "./errors/react-router-module-load.error";
+import { ReactRouterBuildError } from "./errors/react-router-build.error";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ServerBuild {
 	routes: any;
 	assets: any;
@@ -16,76 +19,47 @@ interface ServerBuild {
 	prerender?: any[];
 	routeDiscovery?: boolean;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 @Injectable()
 export class ReactRouterService implements OnModuleInit {
-	private readonly logger = new Logger(ReactRouterService.name, { timestamp: true });
+	private readonly logger = new Logger(ReactRouterService.name);
 	private build: ServerBuild | null = null;
 	private buildLoaded = false;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private handler: any = null;
 
 	async onModuleInit() {
 		await this.loadBuild();
 	}
 
 	private async loadBuild(): Promise<void> {
+		const serverPath = pathToFileURL(join(process.cwd(), "dist", "web", "server", "index.mjs")).href;
 		try {
-			const serverPath = join(__dirname, "..", "..", "web", "server", "index.mjs");
-			const fileUrl = pathToFileURL(serverPath).href;
-			this.logger.log(`Loading React Router build from: ${fileUrl}`);
+			this.logger.log(`Loading React Router build from: ${serverPath}`);
 
-			const imported: any = await import(fileUrl);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const imported: any = await import(serverPath);
 			this.build = imported as ServerBuild;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			this.handler = createRequestHandler(this.build as any);
 			this.buildLoaded = true;
 
 			this.logger.log("React Router build loaded successfully");
 		} catch (error) {
-			this.logger.error("Failed to load React Router server build:", error);
-			throw error;
+			throw new ReactRouterModuleLoadError(serverPath, error);
 		}
 	}
 
 	isBuildReady(): boolean {
-		return this.buildLoaded && this.build !== null;
+		return this.buildLoaded && this.build !== null && this.handler !== null;
 	}
 
-	async handleRequest(req: Request, res: Response): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	getHandler(): any {
 		if (!this.isBuildReady()) {
-			throw new Error("React Router build not loaded");
+			throw new ReactRouterBuildError();
 		}
-
-		const { createRequestHandler } = await import("react-router");
-		const handler = createRequestHandler(this.build as any);
-
-		// Convert Express request to Web Request
-		const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
-		const webRequest = new Request(url.toString(), {
-			method: req.method,
-			headers: new Headers(req.headers as HeadersInit),
-			body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined
-		});
-
-		const webResponse = await handler(webRequest);
-
-		// Convert Web Response to Express response
-		res.status(webResponse.status);
-		webResponse.headers.forEach((value, key) => {
-			res.setHeader(key, value);
-		});
-
-		if (webResponse.body) {
-			const reader = webResponse.body.getReader();
-			const pump = async () => {
-				const { done, value } = await reader.read();
-				if (done) {
-					res.end();
-					return;
-				}
-				res.write(value);
-				return pump();
-			};
-			await pump();
-		} else {
-			res.end();
-		}
+		return this.handler;
 	}
 }

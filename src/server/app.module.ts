@@ -5,27 +5,25 @@ import { join } from "path";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ReactRouterModule } from "./react-router/react-router.module";
-import { MediaModule } from "./media/media.module";
-import { FilesystemService } from "./filesystem/filesystem.service";
-import { FilesystemModule } from "./filesystem/filesystem.module";
+import { VideoModule } from "./video/video.module";
 import configuration from "./config/configuration";
+import { pathToFileURL } from "url";
 
 const isProduction = process.env.NODE_ENV === "production";
 
 @Module({
-	providers: [AppService, FilesystemService],
+	providers: [AppService],
 	controllers: [AppController],
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
 			load: [configuration]
 		}),
-		MediaModule,
-		FilesystemModule,
+		VideoModule,
 		...(isProduction
 			? [
 					ServeStaticModule.forRoot({
-						rootPath: join(__dirname, "..", "web", "client"),
+						rootPath: pathToFileURL(join(process.cwd(), "dist", "web", "client")).href,
 						serveRoot: "/"
 					}),
 					ReactRouterModule

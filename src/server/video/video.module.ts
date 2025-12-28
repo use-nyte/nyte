@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { VideoService } from "./video.service";
 import { VideoController } from "./video.controller";
-import { FilesystemModule } from "../../filesystem/filesystem.module";
+import { FilesystemModule } from "../filesystem/filesystem.module";
 
 @Module({
 	providers: [VideoService],
