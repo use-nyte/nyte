@@ -1,6 +1,6 @@
 {
 	"name": "nyte",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Server and main web app for Nyte",
 	"license": "Apache-2.0",
 	"scripts": {
