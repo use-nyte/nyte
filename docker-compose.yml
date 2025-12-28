@@ -5,7 +5,6 @@ services:
         image: meawesome/nyte:latest
         container_name: nyte
         environment:
-            - NODE_ENV=production
             - MEDIA_DIRECTORY=/app/data/media
         ports:
             - "3000:3000"

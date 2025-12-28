@@ -7,7 +7,6 @@ import { AppService } from "./app.service";
 import { ReactRouterModule } from "./react-router/react-router.module";
 import { VideoModule } from "./video/video.module";
 import configuration from "./config/configuration";
-import { pathToFileURL } from "url";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -23,7 +22,7 @@ const isProduction = process.env.NODE_ENV === "production";
 		...(isProduction
 			? [
 					ServeStaticModule.forRoot({
-						rootPath: pathToFileURL(join(process.cwd(), "dist", "web", "client")).href,
+						rootPath: join(process.cwd(), "dist", "web", "client"),
 						serveRoot: "/"
 					}),
 					ReactRouterModule

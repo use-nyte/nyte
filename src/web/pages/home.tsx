@@ -2,8 +2,9 @@ export function meta() {
 	return [{ title: "Nyte - Home" }, { name: "description", content: "Welcome to Nyte!" }];
 }
 
-export async function loader() {
-	const apiUrl = typeof window === "undefined" ? "http://localhost:3000/api/videos" : "/api/videos";
+export async function loader({ request }: { request: Request }) {
+	const url = new URL(request.url);
+	const apiUrl = `${url.protocol}//${url.host}/api/videos`;
 	return fetch(apiUrl).then((res) => res.json());
 }
 
