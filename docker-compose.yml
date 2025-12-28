@@ -1,18 +1,18 @@
-version: '3.9'
+version: "3.9"
 
 services:
-  nyte:
-    image: meawesome/nyte:latest
-    container_name: nyte
-    environment:
-      - NODE_ENV=production
-      - MEDIA_DIRECTORY=/app/data/media
-    ports:
-      - "3000:3000"
-    volumes:
-      - nyte_dev:/app/data
-    restart: unless-stopped
+    nyte:
+        image: meawesome/nyte:latest
+        container_name: nyte
+        environment:
+            - NODE_ENV=production
+            - MEDIA_DIRECTORY=/app/data/media
+        ports:
+            - "3000:3000"
+        volumes:
+            - nyte_dev:/app/data
+        restart: unless-stopped
 
 volumes:
-  nyte_dev:
-    external: true
+    nyte_dev:
+        external: true

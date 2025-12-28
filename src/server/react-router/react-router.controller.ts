@@ -28,7 +28,8 @@ export class ReactRouterController {
 		try {
 			const handler = this.reactRouterService.getHandler();
 
-			const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
+			const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+			const url = new URL(req.url, `${protocol}://${req.headers.host ?? "localhost"}`);
 			const webRequest = new Request(url.toString(), {
 				method: req.method,
 				headers: new Headers(req.headers as HeadersInit),
