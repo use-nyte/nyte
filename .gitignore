@@ -140,3 +140,9 @@ vite.config.ts.timestamp-*
 
 # React Router cache
 .react-router
+
+# Data files
+data
+
+# ffmpeg binaries
+/ffmpeg

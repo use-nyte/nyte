@@ -3,6 +3,9 @@ import { FilesystemService } from "../filesystem/filesystem.service";
 import { ConfigService } from "@nestjs/config";
 import { VideoReadError } from "./errors/video-read.error";
 import { ScanDirectoryOptions } from "../filesystem/types/scan-directory-options.type";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Video } from "./entities/video.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class VideoService {
@@ -10,7 +13,9 @@ export class VideoService {
 
 	constructor(
 		private readonly configService: ConfigService,
-		private readonly filesystemService: FilesystemService
+		private readonly filesystemService: FilesystemService,
+		@InjectRepository(Video)
+		private readonly videoRepository: Repository<Video>
 	) {}
 
 	async scanVideosInDirectory(directoryPath: string, options?: ScanDirectoryOptions): Promise<string[]> {
