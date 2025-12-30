@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { FfmpegDownloaderService } from "./ffmpeg-downloader.service";
+import { FfmpegPathService } from "./ffmpeg-path.service";
 import { FfmpegService } from "./ffmpeg.service";
 
 @Module({
-    providers: [FfmpegDownloaderService, FfmpegService],
-    exports: [FfmpegService]
+	providers: [FfmpegPathService, FfmpegService],
+	exports: [FfmpegService]
 })
 export class FfmpegModule {}

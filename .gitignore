@@ -145,4 +145,5 @@ vite.config.ts.timestamp-*
 data
 
 # ffmpeg binaries
-/ffmpeg
+/bin/ffmpeg
+/.ffmpeg-temp

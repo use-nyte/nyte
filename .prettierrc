@@ -15,5 +15,7 @@
 	"htmlWhitespaceSensitivity": "css",
 	"endOfLine": "crlf",
 	"embeddedLanguageFormatting": "auto",
-	"singleAttributePerLine": false
+	"singleAttributePerLine": false,
+	"plugins": ["prettier-plugin-tailwindcss"],
+	"tailwindStylesheet": "./src/web/app.css"
 }

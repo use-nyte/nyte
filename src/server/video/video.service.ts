@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { FilesystemService } from "../filesystem/filesystem.service";
 import { ConfigService } from "@nestjs/config";
 import { VideoReadError } from "./errors/video-read.error";
-import { ScanDirectoryOptions } from "../filesystem/types/scan-directory-options.type";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Video } from "./entities/video.entity";
 import { Repository } from "typeorm";
@@ -18,25 +17,36 @@ export class VideoService {
 		private readonly videoRepository: Repository<Video>
 	) {}
 
-	async scanVideosInDirectory(directoryPath: string, options?: ScanDirectoryOptions): Promise<string[]> {
-		return this.filesystemService.scanDirectory(directoryPath, {
-			recursive: options?.recursive ?? true,
-			filterFileTypes: options?.filterFileTypes ?? [".mp4", ".mkv", ".avi", ".mov"]
+	async indexVideoFile(videoPath: string): Promise<Video> {
+		let video = await this.videoRepository.findOne({ where: { filePath: videoPath } });
+		if (!video) {
+			video = this.videoRepository.create({
+				filePath: videoPath,
+				fileSize: (await this.filesystemService.getFileStats(videoPath)).size
+			});
+		}
+		await this.videoRepository.save(video);
+		this.logger.log(`Indexed video file: ${videoPath}`);
+		return video;
+	}
+
+	async getAllVideos(take: number, skip: number): Promise<Video[]> {
+		return this.videoRepository.find({
+			order: { id: "ASC" },
+			take,
+			skip
 		});
 	}
 
-	async getVideo(videoPath: string): Promise<Buffer> {
-		return this.filesystemService
-			.getFile(videoPath)
-			.then(
-				function handleVideoReadSuccess(data: Buffer) {
-					return data;
-				}.bind(this)
-			)
-			.catch(
-				function handleVideoReadError(error: Error) {
-					throw new VideoReadError(videoPath, error);
-				}.bind(this)
-			);
+	async getVideo(videoId: number): Promise<Video | null> {
+		return this.videoRepository.findOne({ where: { id: videoId } });
+	}
+
+	streamVideo(video: Video, range: { start: number; end: number }) {
+		try {
+			return this.filesystemService.readStream(video.filePath, range);
+		} catch (error) {
+			throw new VideoReadError(video.filePath, error);
+		}
 	}
 }

@@ -46,16 +46,20 @@ void (async () => {
 	await app.listen(port, "0.0.0.0", async () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const modulesContainer = (app as any).container?.getModules();
-        
-        if (modulesContainer) {
-            for (const module of modulesContainer.values()) {
-                for (const provider of module.providers.values()) {
-                    const instance = provider.instance;
-                    if (instance && 'onApplicationStart' in instance && typeof instance.onApplicationStart === 'function') {
-                        (instance as OnApplicationStart).onApplicationStart();
-                    }
-                }
-            }
-        }
+
+		if (modulesContainer) {
+			for (const module of modulesContainer.values()) {
+				for (const provider of module.providers.values()) {
+					const instance = provider.instance;
+					if (
+						instance &&
+						"onApplicationStart" in instance &&
+						typeof instance.onApplicationStart === "function"
+					) {
+						(instance as OnApplicationStart).onApplicationStart();
+					}
+				}
+			}
+		}
 	});
 })();

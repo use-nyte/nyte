@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for Nyte application
 
 # Stage 1: Builder - Build the application
-FROM node:24-alpine AS builder
+FROM node:24 AS builder
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -27,7 +27,7 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm build:web && pnpm build:server && node scripts/move-web-build.mjs
 
 # Stage 2: Production - Run the application
-FROM node:24-alpine AS production
+FROM node:24 AS production
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -42,6 +42,11 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy ffmpeg binaries based on platform
+# For linux/amd64 -> linux-x64, linux/arm64 -> linux-arm64
+COPY bin/ffmpeg/linux-x64/ /app/bin/ffmpeg/linux-x64/
+RUN chmod +x /app/bin/ffmpeg/linux-x64/ffmpeg /app/bin/ffmpeg/linux-x64/ffprobe
 
 # Set environment to production
 ENV NODE_ENV=production

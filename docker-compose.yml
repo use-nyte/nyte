@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
     nyte:
-        image: meawesome/nyte:latest
+        image: meawesome/nyte:dev
         container_name: nyte
         environment:
             - MEDIA_DIRECTORY=/app/data/media

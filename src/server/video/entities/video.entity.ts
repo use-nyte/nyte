@@ -1,19 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Video {
-  @PrimaryGeneratedColumn()
-  id: number;
+	@PrimaryGeneratedColumn()
+	id: number;
 
-    @Column()
-    title: string;
+	@Column()
+	filePath: string;
 
-    @Column()
-    description: string;
-
-    @Column()
-    filePath: string;
-
-    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
+	@Column()
+	fileSize: number;
 }

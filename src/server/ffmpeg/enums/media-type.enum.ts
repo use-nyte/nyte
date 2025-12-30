@@ -1,5 +1,5 @@
 export const MediaType = {
-    VIDEO: "video"
+	VIDEO: "video"
 } as const;
 
-export type MediaType = typeof MediaType[keyof typeof MediaType];
+export type MediaType = (typeof MediaType)[keyof typeof MediaType];
