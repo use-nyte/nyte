@@ -1,8 +1,8 @@
-import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigModule } from "@nestjs/config";
+import { Test, TestingModule } from "@nestjs/testing";
+import { VideoController } from "./video.controller";
 import { VideoModule } from "./video.module";
 import { VideoService } from "./video.service";
-import { VideoController } from "./video.controller";
 
 describe("VideoModule", () => {
 	let module: TestingModule;

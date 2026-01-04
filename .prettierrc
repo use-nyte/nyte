@@ -16,6 +16,27 @@
 	"endOfLine": "crlf",
 	"embeddedLanguageFormatting": "auto",
 	"singleAttributePerLine": false,
-	"plugins": ["prettier-plugin-tailwindcss"],
-	"tailwindStylesheet": "./src/web/app.css"
+	"plugins": [
+		"prettier-plugin-organize-class-members",
+		"prettier-plugin-organize-imports",
+		"prettier-plugin-tailwindcss"
+	],
+	"tailwindStylesheet": "./src/web/app.css",
+	"classSectionOrder": [
+		"properties",
+		"staticProperties",
+		"constructor",
+		"methods",
+		"staticMethods"
+	],
+	"classAccessibilityOrder": [
+		"public",
+		"protected",
+		"private"
+	],
+	"classGroupOrder": [
+		"everythingElse",
+		"gettersAndSetters"
+	],
+	"classGroupSortOrder": "alphabetical"
 }

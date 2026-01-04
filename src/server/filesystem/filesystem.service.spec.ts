@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { FilesystemService } from "./filesystem.service";
+import { FileReadError } from "../ffmpeg/errors/ffmpeg-platform.error";
 import { DirReadError } from "./errors/dir-read.error";
-import { FileReadError } from "./errors/file-read.error";
+import { FilesystemService } from "./filesystem.service";
 
 const TESTING_DIRECTORY = "./test/mock_directory";
 

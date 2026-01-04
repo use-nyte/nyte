@@ -1,5 +1,5 @@
-import { existsSync, rmSync, renameSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync, renameSync, rmSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);

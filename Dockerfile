@@ -54,5 +54,9 @@ ENV NODE_ENV=production
 # Expose the port your app runs on (adjust if different)
 EXPOSE 3000
 
+# Create data volume
+VOLUME /data
+RUN mkdir -p /app/data && ln -sfn /app/data /data
+
 # Start the application
 CMD ["pnpm", "start"]

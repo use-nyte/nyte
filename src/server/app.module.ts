@@ -1,15 +1,15 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ServeStaticModule } from "@nestjs/serve-static";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { join } from "path";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import configuration from "./config/configuration";
+import { FfmpegModule } from "./ffmpeg/ffmpeg.module";
+import { MediaModule } from "./media/media.module";
 import { ReactRouterModule } from "./react-router/react-router.module";
 import { VideoModule } from "./video/video.module";
-import configuration from "./config/configuration";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { MediaModule } from "./media/media.module";
-import { FfmpegModule } from "./ffmpeg/ffmpeg.module";
 
 const isProduction = process.env.NODE_ENV === "production";
 

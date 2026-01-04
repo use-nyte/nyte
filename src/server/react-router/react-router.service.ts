@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import { createRequestHandler } from "react-router";
 import { join } from "path";
+import { createRequestHandler } from "react-router";
 import { pathToFileURL } from "url";
-import { ReactRouterModuleLoadError } from "./errors/react-router-module-load.error";
 import { ReactRouterBuildError } from "./errors/react-router-build.error";
+import { ReactRouterModuleLoadError } from "./errors/react-router-module-load.error";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ServerBuild {
@@ -23,14 +23,26 @@ interface ServerBuild {
 
 @Injectable()
 export class ReactRouterService implements OnModuleInit {
-	private readonly logger = new Logger(ReactRouterService.name);
 	private build: ServerBuild | null = null;
 	private buildLoaded = false;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private handler: any = null;
+	private readonly logger = new Logger(ReactRouterService.name);
+
+	isBuildReady(): boolean {
+		return this.buildLoaded && this.build !== null && this.handler !== null;
+	}
 
 	async onModuleInit() {
 		await this.loadBuild();
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	getHandler(): any {
+		if (!this.isBuildReady()) {
+			throw new ReactRouterBuildError();
+		}
+		return this.handler;
 	}
 
 	private async loadBuild(): Promise<void> {
@@ -49,17 +61,5 @@ export class ReactRouterService implements OnModuleInit {
 		} catch (error) {
 			throw new ReactRouterModuleLoadError(serverPath, error);
 		}
-	}
-
-	isBuildReady(): boolean {
-		return this.buildLoaded && this.build !== null && this.handler !== null;
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	getHandler(): any {
-		if (!this.isBuildReady()) {
-			throw new ReactRouterBuildError();
-		}
-		return this.handler;
 	}
 }

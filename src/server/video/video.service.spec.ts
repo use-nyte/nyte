@@ -1,7 +1,7 @@
-import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
-import { VideoService } from "./video.service";
+import { Test, TestingModule } from "@nestjs/testing";
 import { FilesystemService } from "../filesystem/filesystem.service";
+import { VideoService } from "./video.service";
 
 const TESTING_DIRECTORY = "./test/mock_directory";
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 
-import https from "https";
-import fs from "fs";
-import path from "path";
-import { pipeline } from "stream";
-import { promisify } from "util";
-import { createWriteStream } from "fs";
 import { exec } from "child_process";
 import crypto from "crypto";
-import yauzl from "yauzl";
+import fs, { createWriteStream } from "fs";
+import https from "https";
+import path from "path";
+import { pipeline } from "stream";
 import { fileURLToPath } from "url";
+import { promisify } from "util";
+import yauzl from "yauzl";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

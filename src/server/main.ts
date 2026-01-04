@@ -1,8 +1,8 @@
-import { NestFactory } from "@nestjs/core";
-import { ConfigService } from "@nestjs/config";
-import { AppModule } from "./app.module.js";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import { ConsoleLogger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { NestFactory } from "@nestjs/core";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import { AppModule } from "./app.module.js";
 import { NyteExceptionFilter } from "./common/filters/nyte-exception.filter.js";
 import { OnApplicationStart } from "./common/interfaces/on-application-start.interface.js";
 

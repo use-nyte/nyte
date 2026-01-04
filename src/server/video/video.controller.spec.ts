@@ -1,10 +1,10 @@
-import { Test, TestingModule } from "@nestjs/testing";
 import { APP_FILTER } from "@nestjs/core";
-import { VideoController } from "./video.controller";
-import { VideoService } from "./video.service";
+import { Test, TestingModule } from "@nestjs/testing";
 import type { Request, Response } from "express";
 import { NyteExceptionFilter } from "../common/filters/nyte-exception.filter";
 import { VideoReadError } from "./errors/video-read.error";
+import { VideoController } from "./video.controller";
+import { VideoService } from "./video.service";
 
 describe("VideoController", () => {
 	let controller: VideoController;

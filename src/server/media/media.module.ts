@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { FilesystemModule } from "../filesystem/filesystem.module";
 import { FfmpegModule } from "../ffmpeg/ffmpeg.module";
-import { MediaService } from "./media.service";
+import { FilesystemModule } from "../filesystem/filesystem.module";
 import { VideoModule } from "../video/video.module";
+import { MediaService } from "./media.service";
 
 @Module({
 	providers: [MediaService],

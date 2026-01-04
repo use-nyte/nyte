@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { FilesystemService } from "../filesystem/filesystem.service";
-import { OnApplicationStart } from "../common/interfaces/on-application-start.interface";
 import path from "path";
+import { OnApplicationStart } from "../common/interfaces/on-application-start.interface";
 import { FfmpegService } from "../ffmpeg/ffmpeg.service";
+import { FilesystemService } from "../filesystem/filesystem.service";
 import { VideoService } from "../video/video.service";
 
 @Injectable()
@@ -16,14 +16,6 @@ export class MediaService implements OnApplicationStart {
 		private readonly ffmpegService: FfmpegService,
 		private readonly videoService: VideoService
 	) {}
-
-	async onApplicationStart(): Promise<void> {
-		this.logger.log("Starting media indexing...");
-		this.logger.warn("Media indexing can take a while depending on the size of your media library.");
-		this.logger.debug("This process will eventually be moved to a background job.");
-		await this.indexMediaDirectory();
-		this.logger.log("Media indexing completed.");
-	}
 
 	async indexMediaDirectory(): Promise<void> {
 		const mediaDir = this.configService.get<string>("filesystem.mediaDirectory");
@@ -59,8 +51,16 @@ export class MediaService implements OnApplicationStart {
 				continue;
 			}
 
-			this.logger.debug(`Unsupported media file skipped: ${filePath}`);
-			console.log(metadata);
+			// this.logger.debug(`Unsupported media file skipped: ${filePath}`);
+			// console.log(metadata);
 		}
+	}
+
+	async onApplicationStart(): Promise<void> {
+		this.logger.log("Starting media indexing...");
+		this.logger.warn("Media indexing can take a while depending on the size of your media library.");
+		this.logger.debug("This process will eventually be moved to a background job.");
+		await this.indexMediaDirectory();
+		this.logger.log("Media indexing completed.");
 	}
 }

@@ -1,11 +1,11 @@
-import { Test, TestingModule } from "@nestjs/testing";
 import { APP_FILTER } from "@nestjs/core";
-import { ReactRouterController } from "./react-router.controller";
-import { ReactRouterService } from "./react-router.service";
-import type { Request, Response, NextFunction } from "express";
+import { Test, TestingModule } from "@nestjs/testing";
+import type { NextFunction, Request, Response } from "express";
 import { NyteExceptionFilter } from "../common/filters/nyte-exception.filter";
 import { ReactRouterBuildError } from "./errors/react-router-build.error";
 import { ReactRouterRenderError } from "./errors/react-router-render.error";
+import { ReactRouterController } from "./react-router.controller";
+import { ReactRouterService } from "./react-router.service";
 
 describe("ReactRouterController", () => {
 	let controller: ReactRouterController;

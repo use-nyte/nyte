@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { ReactRouterController } from "./react-router.controller";
 import { ReactRouterModule } from "./react-router.module";
 import { ReactRouterService } from "./react-router.service";
-import { ReactRouterController } from "./react-router.controller";
 
 describe("ReactRouterModule", () => {
 	let module: TestingModule;

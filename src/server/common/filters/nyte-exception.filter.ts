@@ -1,9 +1,9 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from "@nestjs/common";
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from "@nestjs/common";
 import { Response } from "express";
-import { NyteError } from "../errors/nyte.error";
-import { VideoReadError } from "../../video/errors/video-read.error";
-import { FileReadError } from "../../filesystem/errors/file-read.error";
 import { DirReadError } from "../../filesystem/errors/dir-read.error";
+import { FileReadError } from "../../filesystem/errors/file-read.error";
+import { VideoReadError } from "../../video/errors/video-read.error";
+import { NyteError } from "../errors/nyte.error";
 
 @Catch(NyteError)
 export class NyteExceptionFilter implements ExceptionFilter {

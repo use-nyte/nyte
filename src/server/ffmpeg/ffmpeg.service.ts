@@ -1,12 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { Injectable, OnApplicationBootstrap, Logger } from "@nestjs/common";
-import { spawn, ChildProcess } from "child_process";
-import { FfmpegPathService } from "./ffmpeg-path.service";
+import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
+import { ChildProcess, spawn } from "child_process";
+import { Permission } from "../filesystem/enums/permission.enum";
+import { FilesystemService } from "../filesystem/filesystem.service";
+import { PathService } from "../path/path.service";
+import { FfmpegPlatformError } from "./errors/ffmpeg-platform.error";
 
 @Injectable()
 export class FfmpegService implements OnApplicationBootstrap {
+	private binariesDirPath: string;
+	private ffmpegPath: string;
+	private ffprobePath: string;
+
 	private readonly logger = new Logger(FfmpegService.name, { timestamp: true });
 
 	private supportedFormatsCache: Array<{
@@ -16,22 +20,82 @@ export class FfmpegService implements OnApplicationBootstrap {
 		canMux: boolean;
 	}> | null = null;
 
-	constructor(private readonly ffmpegPathService: FfmpegPathService) {}
+	constructor(
+		private readonly filesystemService: FilesystemService,
+		private readonly pathService: PathService
+	) {}
 
-	async onApplicationBootstrap(): Promise<void> {
-		this.logger.log("Finding supported formats using ffmpeg...");
+	public isAudioFile(metadata: any): boolean {
+		if (!metadata || !metadata.format || !metadata.streams) return false;
+		return metadata.streams.some((s: any) => s.codec_type === "audio") && metadata.format.bit_rate > 0;
+	}
+
+	public isFormatSupported(fileExtension: string, checkDemux: boolean = true, checkMux: boolean = false): boolean {
+		if (!this.supportedFormatsCache) {
+			this.logger.warn("Supported formats cache is not initialized. Was the application bootstrap completed?");
+			return false;
+		}
+
+		const EXTENSION_MAP = {
+			jpg: "jpeg",
+			mkv: "matroska"
+		};
+
+		let ext = fileExtension.toLowerCase().replace(/^\./, ""); // Remove leading dot if present
+		if (EXTENSION_MAP[ext]) {
+			ext = EXTENSION_MAP[ext];
+		}
+
+		// Dynamically map to the correct format name
+		ext = this.getImageFormatName(ext);
+
+		return this.supportedFormatsCache.some((format) => {
+			// Split comma-separated format names (e.g., "mov,mp4,m4a,3gp,3g2,mj2")
+			const formatNames = format.name.split(",").map((n) => n.trim());
+			const hasExtension = formatNames.includes(ext);
+
+			if (!hasExtension) return false;
+
+			// Check if format supports the requested operation
+			if (checkDemux && !format.canDemux) return false;
+			if (checkMux && !format.canMux) return false;
+
+			return true;
+		});
+	}
+
+	public isGifFile(metadata: any): boolean {
+		if (!metadata || !metadata.format || !metadata.streams) return false;
+		return (
+			metadata.streams.some((s: any) => s.codec_type === "video" && s.codec_name === "gif") &&
+			metadata.format.format_name === "gif"
+		);
+	}
+
+	public isImageFile(metadata: any): boolean {
+		if (!metadata || !metadata.format || !metadata.streams) return false;
+		return (
+			metadata.streams.some((s: any) => s.codec_type === "video") &&
+			(metadata.format.format_name === "image2" ||
+				metadata.format.bit_rate === undefined ||
+				metadata.format.bit_rate === 0)
+		);
+	}
+
+	public isVideoFile(metadata: any): boolean {
+		if (!metadata || !metadata.format || !metadata.streams) return false;
+		return (
+			metadata.streams.some((s: any) => s.codec_type === "video" && s.codec_name !== "gif") &&
+			metadata.format.bit_rate > 0 &&
+			metadata.format.format_name !== "image2"
+		);
+	}
+
+	public async onApplicationBootstrap(): Promise<void> {
+		this.binariesDirPath = this.resolveBinariesDirPath();
+		this.ffmpegPath = this.resolveBinary("ffmpeg");
+		this.ffprobePath = this.resolveBinary("ffprobe");
 		this.supportedFormatsCache = await this.getSupportedFormats();
-		this.logger.log(`Found ${this.supportedFormatsCache.length} supported formats.`);
-	}
-
-	private spawnFfmpeg(args: string[]): ChildProcess {
-		const ffmpegPath = this.ffmpegPathService.getFfmpegPath();
-		return spawn(ffmpegPath, args);
-	}
-
-	private spawnFfprobe(args: string[]): ChildProcess {
-		const ffprobePath = this.ffmpegPathService.getFfprobePath();
-		return spawn(ffprobePath, args);
 	}
 
 	public getFileMetadata(filePath: string): Promise<any | null> {
@@ -123,6 +187,42 @@ export class FfmpegService implements OnApplicationBootstrap {
 		});
 	}
 
+	private resolveBinariesDirPath(): string {
+		const platformDirName = `${process.platform}-${process.arch}`;
+		const platformPath = this.pathService.joinFromCwd("bin", "ffmpeg", platformDirName);
+
+		if (!this.filesystemService.canAccessSync(platformPath, Permission.VISIBLE)) {
+			throw new FfmpegPlatformError(platformDirName);
+		}
+
+		return platformPath;
+	}
+
+	private resolveBinary(binaryName: string): string {
+		const ext = process.platform === "win32" ? ".exe" : "";
+		const ffmpegPath = this.pathService.join(this.binariesDirPath, `${binaryName}${ext}`);
+
+		if (!this.filesystemService.canAccessSync(ffmpegPath, Permission.VISIBLE)) {
+			throw new Error(`FFmpeg binary not found or not accessible at ${ffmpegPath}.`);
+		}
+
+		if (!this.filesystemService.canAccessSync(ffmpegPath, Permission.EXECUTABLE)) {
+			throw new Error(`FFmpeg binary at ${ffmpegPath} is not executable.`);
+		}
+
+		return ffmpegPath;
+	}
+
+	private spawnFfmpeg(args: string[]): ChildProcess {
+		const ffmpegPath = this.ffmpegPathService.getFfmpegPath();
+		return spawn(ffmpegPath, args);
+	}
+
+	private spawnFfprobe(args: string[]): ChildProcess {
+		const ffprobePath = this.ffmpegPathService.getFfprobePath();
+		return spawn(ffprobePath, args);
+	}
+
 	private getImageFormatName(ext: string): string {
 		if (!this.supportedFormatsCache) return ext;
 
@@ -147,71 +247,5 @@ export class FfmpegService implements OnApplicationBootstrap {
 		}
 
 		return ext;
-	}
-
-	public isFormatSupported(fileExtension: string, checkDemux: boolean = true, checkMux: boolean = false): boolean {
-		if (!this.supportedFormatsCache) {
-			this.logger.warn("Supported formats cache is not initialized. Was the application bootstrap completed?");
-			return false;
-		}
-
-		const EXTENSION_MAP = {
-			jpg: "jpeg",
-			mkv: "matroska"
-		};
-
-		let ext = fileExtension.toLowerCase().replace(/^\./, ""); // Remove leading dot if present
-		if (EXTENSION_MAP[ext]) {
-			ext = EXTENSION_MAP[ext];
-		}
-
-		// Dynamically map to the correct format name
-		ext = this.getImageFormatName(ext);
-
-		return this.supportedFormatsCache.some((format) => {
-			// Split comma-separated format names (e.g., "mov,mp4,m4a,3gp,3g2,mj2")
-			const formatNames = format.name.split(",").map((n) => n.trim());
-			const hasExtension = formatNames.includes(ext);
-
-			if (!hasExtension) return false;
-
-			// Check if format supports the requested operation
-			if (checkDemux && !format.canDemux) return false;
-			if (checkMux && !format.canMux) return false;
-
-			return true;
-		});
-	}
-
-	public isVideoFile(metadata: any): boolean {
-		if (!metadata || !metadata.format || !metadata.streams) return false;
-		return (
-			metadata.streams.some((s: any) => s.codec_type === "video" && s.codec_name !== "gif") &&
-			metadata.format.bit_rate > 0 &&
-			metadata.format.format_name !== "image2"
-		);
-	}
-
-	public isAudioFile(metadata: any): boolean {
-		if (!metadata || !metadata.format || !metadata.streams) return false;
-		return metadata.streams.some((s: any) => s.codec_type === "audio") && metadata.format.bit_rate > 0;
-	}
-
-	public isImageFile(metadata: any): boolean {
-		if (!metadata || !metadata.format || !metadata.streams) return false;
-		return (
-			metadata.streams.some((s: any) => s.codec_type === "video") &&
-			(metadata.format.format_name === "image2" ||
-				metadata.format.bit_rate === undefined ||
-				metadata.format.bit_rate === 0)
-		);
-	}
-
-	public isGifFile(metadata: any): boolean {
-		if (!metadata || !metadata.format || !metadata.streams) return false;
-		return (
-			metadata.streams.some((s: any) => s.codec_type === "video" && s.codec_name === "gif") &&
-			metadata.format.format_name === "gif"
-		);
 	}
 }

@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ReactRouterService } from "./react-router.service";
-import { join } from "path";
 import fs from "fs";
+import { join } from "path";
 import { pathToFileURL } from "url";
-import { ReactRouterModuleLoadError } from "./errors/react-router-module-load.error";
 import { ReactRouterBuildError } from "./errors/react-router-build.error";
+import { ReactRouterModuleLoadError } from "./errors/react-router-module-load.error";
+import { ReactRouterService } from "./react-router.service";
 
 const distExists = fs.existsSync(join(process.cwd(), "dist"));
 

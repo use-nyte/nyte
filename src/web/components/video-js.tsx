@@ -5,8 +5,8 @@
 
 import React from "react";
 import videojs from "video.js";
-import "videojs-mobile-ui";
 import "video.js/dist/video-js.css";
+import "videojs-mobile-ui";
 import "videojs-mobile-ui/dist/videojs-mobile-ui.css";
 
 export const VideoJS = (props) => {

@@ -1,8 +1,8 @@
-import { Video } from "../../server/video/entities/video.entity";
-import { Button } from "~/components/ui/button";
-import { ButtonGroup } from "~/components/ui/button-group";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { ButtonGroup } from "~/components/ui/button-group";
+import { Video } from "../../server/video/entities/video.entity";
 
 const PAGE_SIZE = 20;
 

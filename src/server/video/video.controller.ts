@@ -8,14 +8,6 @@ export class VideoController {
 
 	constructor(private readonly videoService: VideoService) {}
 
-	@Get()
-	async getVideos(@Req() req: Request, @Res() res: Response) {
-		const take = Number(req.query.take) || 20;
-		const skip = Number(req.query.skip) || 0;
-		const videos = await this.videoService.getAllVideos(take, skip);
-		res.json(videos);
-	}
-
 	@Get(":videoId")
 	async streamVideo(@Req() req: Request, @Res() res: Response) {
 		const videoId = Number(req.params.videoId);
@@ -43,5 +35,13 @@ export class VideoController {
 			"Content-Type": "video/mp4"
 		});
 		readStream.pipe(res);
+	}
+
+	@Get()
+	async getVideos(@Req() req: Request, @Res() res: Response) {
+		const take = Number(req.query.take) || 20;
+		const skip = Number(req.query.skip) || 0;
+		const videos = await this.videoService.getAllVideos(take, skip);
+		res.json(videos);
 	}
 }
