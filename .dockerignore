@@ -1,0 +1,10 @@
+.git
+.github
+nyte-server
+nyte-web
+**/.git
+**/.github
+**/coverage
+**/dist
+**/node_modules
+**/.generated

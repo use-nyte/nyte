@@ -1,0 +1,118 @@
+name: Container Images
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    name: Build and smoke-test images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Read component commits
+        id: components
+        run: |
+          for component in nyte-server nyte-web; do
+            commit="$(jq -er --arg component "$component" '.[$component] | select(test("^[0-9a-f]{40}$"))' components.json)"
+            echo "$component=$commit" >> "$GITHUB_OUTPUT"
+          done
+
+      - uses: actions/checkout@v7
+        with:
+          repository: use-nyte/nyte-server
+          ref: ${{ steps.components.outputs.nyte-server }}
+          path: components/nyte-server
+          persist-credentials: false
+
+      - uses: actions/checkout@v7
+        with:
+          repository: use-nyte/nyte-web
+          ref: ${{ steps.components.outputs.nyte-web }}
+          path: components/nyte-web
+          persist-credentials: false
+
+      - name: Build all three images
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+        run: |
+          for target in nyte-server nyte-web nyte; do
+            docker build --secret id=npm_token,env=NODE_AUTH_TOKEN \
+              --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+              --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+              --target "$target" --tag "$target:baseline" .
+          done
+
+      - name: Run image smoke tests
+        run: bash packaging/smoke.sh
+
+      - name: Save tested images
+        if: github.event_name == 'push'
+        run: docker save nyte-server:baseline nyte-web:baseline nyte:baseline | gzip > images.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: tested-images
+          path: images.tar.gz
+          retention-days: 1
+
+  publish:
+    name: Publish tested images to GHCR
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: publish-images-${{ github.ref_type }}
+      cancel-in-progress: ${{ github.ref_type == 'branch' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tested-images
+
+      - name: Load tested images
+        run: docker load --input images.tar.gz
+
+      - name: Publish immutable and channel tags
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+            tags=("${GITHUB_REF_NAME}" latest)
+          else
+            tags=("sha-${GITHUB_SHA}" nightly)
+          fi
+          echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          for image in nyte-server nyte-web nyte; do
+            for tag in "${tags[@]}"; do
+              ref="ghcr.io/${GITHUB_REPOSITORY_OWNER}/${image}:${tag}"
+              docker tag "$image:baseline" "$ref"
+              docker push "$ref"
+            done
+          done

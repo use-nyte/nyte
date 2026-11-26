@@ -1,0 +1,22 @@
+server {
+    listen 52471;
+    root /usr/share/nginx/html;
+
+    location = /health/live {
+        resolver 127.0.0.11 valid=5s ipv6=off;
+        set $nyte_server ${NYTE_SERVER_URL};
+        proxy_pass $nyte_server;
+    }
+
+    location ^~ /health/ {
+        return 404;
+    }
+
+    location ^~ /assets/ {
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

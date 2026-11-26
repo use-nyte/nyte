@@ -1,6 +1,0 @@
-[submodule "nyte-server"]
-	path = nyte-server
-	url = https://github.com/use-nyte/nyte-server
-[submodule "nyte-web"]
-	path = nyte-web
-	url = https://github.com/use-nyte/nyte-web
