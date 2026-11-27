@@ -1,6 +1,8 @@
 name: Container Images
 
 on:
+  repository_dispatch:
+    types: [component-main-updated]
   pull_request:
     branches: [main]
   push:
@@ -16,7 +18,7 @@ defaults:
 
 concurrency:
   group: images-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -26,41 +28,48 @@ jobs:
     permissions:
       contents: read
       packages: read
+    outputs:
+      source-tag: ${{ steps.sources.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
-      - name: Read component commits
-        id: components
-        run: |
-          for component in nyte-server nyte-web; do
-            commit="$(jq -er --arg component "$component" '.[$component] | select(test("^[0-9a-f]{40}$"))' components.json)"
-            echo "$component=$commit" >> "$GITHUB_OUTPUT"
-          done
-
       - uses: actions/checkout@v7
         with:
           repository: use-nyte/nyte-server
-          ref: ${{ steps.components.outputs.nyte-server }}
+          ref: main
           path: components/nyte-server
           persist-credentials: false
 
       - uses: actions/checkout@v7
         with:
           repository: use-nyte/nyte-web
-          ref: ${{ steps.components.outputs.nyte-web }}
+          ref: main
           path: components/nyte-web
           persist-credentials: false
+
+      - name: Record source revisions
+        id: sources
+        run: |
+          server="$(git -C components/nyte-server rev-parse HEAD)"
+          web="$(git -C components/nyte-web rev-parse HEAD)"
+          echo "tag=sha-${GITHUB_SHA}-${server}-${web}" >> "$GITHUB_OUTPUT"
+          echo "server=$server" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
 
       - name: Build all three images
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
+          SERVER_SHA: ${{ steps.sources.outputs.server }}
+          WEB_SHA: ${{ steps.sources.outputs.web }}
         run: |
           for target in nyte-server nyte-web nyte; do
             docker build --secret id=npm_token,env=NODE_AUTH_TOKEN \
               --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
               --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+              --label "io.nyte.server.revision=${SERVER_SHA}" \
+              --label "io.nyte.web.revision=${WEB_SHA}" \
               --target "$target" --tag "$target:baseline" .
           done
 
@@ -68,11 +77,11 @@ jobs:
         run: bash packaging/smoke.sh
 
       - name: Save tested images
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         run: docker save nyte-server:baseline nyte-web:baseline nyte:baseline | gzip > images.tar.gz
 
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         with:
           name: tested-images
           path: images.tar.gz
@@ -80,13 +89,10 @@ jobs:
 
   publish:
     name: Publish tested images to GHCR
-    if: github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    concurrency:
-      group: publish-images-${{ github.ref_type }}
-      cancel-in-progress: ${{ github.ref_type == 'branch' }}
     permissions:
       contents: read
       packages: write
@@ -101,12 +107,13 @@ jobs:
       - name: Publish immutable and channel tags
         env:
           GHCR_TOKEN: ${{ github.token }}
+          SOURCE_TAG: ${{ needs.build.outputs.source-tag }}
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
             tags=("${GITHUB_REF_NAME}" latest)
           else
-            tags=("sha-${GITHUB_SHA}" nightly)
+            tags=("$SOURCE_TAG" nightly)
           fi
           echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
           for image in nyte-server nyte-web nyte; do
