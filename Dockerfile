@@ -2,7 +2,7 @@
 FROM node:26-alpine AS build-base
 
 ENV HUSKY=0
-RUN npm install --global pnpm@12.18.0 \
+RUN npm install --global pnpm@12.23.0 \
     && printf '%s\n' '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > /root/.npmrc
 
 FROM build-base AS server-build
