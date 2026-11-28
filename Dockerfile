@@ -47,6 +47,6 @@ COPY --from=web-build /src/nyte-web/dist/ /usr/share/nginx/html/
 EXPOSE 52471
 
 FROM server-runtime AS nyte
-COPY --chown=node:node packaging/combined.cjs ./combined.cjs
+COPY --chown=node:node packaging/combined.mjs ./server/combined.mjs
 COPY --from=web-build --chown=node:node /src/nyte-web/dist/ ./web/
-CMD ["node", "combined.cjs"]
+CMD ["node", "server/combined.mjs"]

@@ -1,14 +1,14 @@
-const { accessSync, constants } = require("node:fs");
-const { extname, join } = require("node:path");
-const { ConsoleLogger, Logger } = require("./server/node_modules/@nestjs/common");
-const { NestFactory } = require("./server/node_modules/@nestjs/core");
-const { AppModule } = require("./server/dist/app.module");
+import { ConsoleLogger, Logger } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { accessSync, constants } from "node:fs";
+import { extname, join } from "node:path";
+import { AppModule } from "./dist/app.module.js";
 
 /** Starts the pinned server module and serves the pinned browser build from the same origin. */
 async function bootstrap() {
   const host = process.env.HOST ?? "127.0.0.1";
   const port = Number(process.env.PORT ?? "52470");
-  const webRoot = join(__dirname, "web");
+  const webRoot = join(import.meta.dirname, "..", "web");
   const indexFile = join(webRoot, "index.html");
 
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
