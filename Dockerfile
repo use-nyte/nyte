@@ -3,24 +3,27 @@ FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6
 
 ENV HUSKY=0
 RUN npm install --global pnpm@12.23.0 \
-    && printf '%s\n' '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > /root/.npmrc
+    && printf '%s\n' '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > /etc/nyte-pnpm-auth.npmrc
 
 FROM build-base AS server-build
 WORKDIR /src/nyte-server
 COPY components/nyte-server/package.json components/nyte-server/pnpm-lock.yaml components/nyte-server/pnpm-workspace.yaml components/nyte-server/.npmrc ./
-RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true pnpm install --frozen-lockfile
+RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true \
+    pnpm --npmrc-auth-file /etc/nyte-pnpm-auth.npmrc install --frozen-lockfile
 COPY components/nyte-server/ ./
 RUN pnpm run build
 
 FROM build-base AS server-deps
 WORKDIR /src/nyte-server
 COPY components/nyte-server/package.json components/nyte-server/pnpm-lock.yaml components/nyte-server/pnpm-workspace.yaml components/nyte-server/.npmrc ./
-RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true pnpm install --frozen-lockfile --prod --ignore-scripts
+RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true \
+    pnpm --npmrc-auth-file /etc/nyte-pnpm-auth.npmrc install --frozen-lockfile --prod --ignore-scripts
 
 FROM build-base AS web-build
 WORKDIR /src/nyte-web
 COPY components/nyte-web/package.json components/nyte-web/pnpm-lock.yaml components/nyte-web/pnpm-workspace.yaml components/nyte-web/.npmrc ./
-RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true pnpm install --frozen-lockfile
+RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN,required=true \
+    pnpm --npmrc-auth-file /etc/nyte-pnpm-auth.npmrc install --frozen-lockfile
 COPY components/nyte-web/ ./
 RUN pnpm exec vite build
 
