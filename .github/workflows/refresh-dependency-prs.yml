@@ -1,15 +1,14 @@
 name: Refresh Dependency PRs
 
 on:
-  push:
+  pull_request_target:
     branches: [main]
+    types: [edited]
 
 permissions: {}
 
 jobs:
-  dispatch:
-    uses: use-nyte/.github/.github/workflows/dispatch-automation.yml@v1.2.0
-    with:
-      event: refresh-dependency-prs
+  request-rebase:
+    uses: use-nyte/.github/.github/workflows/request-dependency-rebase.yml@v1.3.0
     secrets:
       NYTE_AUTOMATION_PRIVATE_KEY: ${{ secrets.NYTE_AUTOMATION_PRIVATE_KEY }}
